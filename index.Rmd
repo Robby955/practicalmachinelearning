@@ -1,0 +1,92 @@
+---
+title: "Practical Machine Learning Course Project"
+author: "Robert Sneiderman"
+date: "August 2019"
+output: html_document
+---
+
+
+# Introduction
+
+ This document works with the pml data set. The data set consists of measurements taken from a accelerometers on volunteers. The volunteers were asked to preform barbell lifts in five diffirent ways while the accelerometer took multiple measurments. The goal of the project is to use these measurments to predict which of the five ways or 'classe' they were preforming.
+
+```{r load packages,warning=FALSE}
+library(lattice)
+library(ggplot2)
+library(caret)
+library(ISLR)
+library(randomForest)
+```
+
+
+
+ The original data set contains 160 columns. This is a large number and not all will be relevant. Also many of the columns contain multiple missing values so they should be removed before analysis.
+ 
+# Read in the Data 
+
+```{r}
+#load training data
+
+training<-read.csv('pml-training.csv',header=TRUE,na.strings=c("","NA")) 
+
+
+#Note that the data contains missing entries so we wish to assign these the NA value instead of just blank
+
+#load the testing data
+
+testing<-read.csv('pml-testing.csv',header=TRUE,na.strings=c("","NA"))
+
+
+```
+
+
+# Tidy the Data
+
+```{r}
+
+#Remove columns which have to many NA or are not relevant. We choose to keep only those columns which have no NA or missing values
+
+indexRemove=which(colSums(is.na(training))>0) #Gives us the indices of the columns that have one or more missing values
+
+training=training[ ,-indexRemove] #Remove those columns with missing values
+
+training=training[ ,-(1:7)] #First seven columns are not relevant to measurments so we remove them.
+
+testing=testing[ ,-indexRemove]
+
+testing=testing[ ,-(1:7)] #Do the same for the testing set.
+
+
+```
+
+
+# Model Fitting
+
+```{r}
+
+#I choose to fit using tree bagging method, the final results are very good (high accuracy).
+
+modelFit3=train(classe~.,method="treebag",data=training)
+
+modelFit3
+
+```
+
+Fitting a model using bagging trees results in a model with high accuracy of 0.984. This is very good.
+
+# Predict on test set
+
+```{r}
+pred=predict(modelFit3,newdata=testing)
+
+pred
+
+```
+ 
+We use the predict function to give our predictions for the testing data. 
+
+ 
+# Conclusion 
+ 
+ For this data set we used the method of classification via bagging to build a model. The main idea in bagging is that builds multiple model from our training data and averages out the multiple models into a final model that is more accurate. The method of bagging performed well on this data set.
+
